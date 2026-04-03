@@ -1,11 +1,10 @@
-# Waveshare ESP32-P4-WIFI6-Touch-LCD-3.5
+# 微雪 ESP32-P4-WIFI6-Touch-LCD-3.5
 
-**ESP32-P4-WIFI6-Touch-LCD-3.5** is the ESP32-P4 +ESP32-C6 screen development board launched by waveshare.
+**ESP32-P4-WIFI6-Touch-LCD-3.5** 是微雪推出的 ESP32-P4 + ESP32-C6 屏幕开发板。
 
-## Configuration
+## 配置
 
-Configuration in `menuconfig`.
+在 `menuconfig` 中进行配置。
 
-Selection Board Type `Xiaozhi Assistant --> Board Type`
+选择开发板类型：`Xiaozhi Assistant --> Board Type`
 - Waveshare ESP32-P4-WIFI6-Touch-LCD-3.5
-

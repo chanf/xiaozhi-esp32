@@ -1,7 +1,6 @@
+[产品链接](https://fr.aliexpress.com/item/1005010207331462.html)
 
-[product](https://fr.aliexpress.com/item/1005010207331462.html)
+这是最便宜的手表形态套件之一。
 
-One of the cheapest kit in a watch form factor.
-
-## Programming ##
-Before assembling the product, unglue the battery from the board to access the programming header. You'll need a ESP32 programming dongle with control of the EN and IO0 pins. The USB connector is not wired to the USB pins of the ESP32-S3 USB interface and can only be used for charging.
+## 编译说明
+在组装产品之前，请将电池从板上拆下以访问编程接头。您需要一个 ESP32 编编程器，能够控制 EN 和 IO0 引脚。USB 连接器未连接到 ESP32-S3 USB 接口的 USB 引脚，只能用于充电。

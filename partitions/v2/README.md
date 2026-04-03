@@ -1,107 +1,107 @@
-# Version 2 Partition Table
+# V2 版本分区表
 
-This version introduces significant improvements over v1 by adding an `assets` partition to support network-loadable content and optimizing partition layouts for different flash sizes.
+此版本通过添加 `assets` 分区来支持可网络加载的内容，并针对不同 Flash 大小优化了分区布局，相比 v1 版本带来了重大改进。
 
-## Key Changes from v1
+## 与 v1 的主要变化
 
-### Major Improvements
-1. **Added Assets Partition**: New `assets` partition for network-loadable content
-2. **Replaced Model Partition**: The old `model` partition (960KB) is replaced with a larger `assets` partition
-3. **Optimized App Partitions**: Reduced application partition sizes to accommodate assets
-4. **Enhanced Flexibility**: Support for dynamic content updates without reflashing
+### 主要改进
+1. **新增资源分区**：用于网络加载内容的新 `assets` 分区
+2. **替换模型分区**：旧的 `model` 分区（960KB）被更大的 `assets` 分区取代
+3. **优化应用分区**：减少应用分区大小以容纳资源
+4. **增强灵活性**：支持无需重新刷写即可动态更新内容
 
-### Assets Partition Features
-The `assets` partition stores:
-- **Wake word models**: Customizable wake word models that can be loaded from the network
-- **Theme files**: Complete theming system including:
-  - Fonts (text and icon fonts)
-  - Audio effects and sound files
-  - Background images and UI elements
-  - Custom emoji packs
-  - Language configuration files
-- **Dynamic Content**: All content can be updated over-the-air via HTTP downloads
+### 资源分区功能
+`assets` 分区存储：
+- **唤醒词模型**：可从网络加载的可自定义唤醒词模型
+- **主题文件**：完整的主题系统，包括：
+  - 字体（文本字体和图标字体）
+  - 音效和声音文件
+  - 背景图片和 UI 元素
+  - 自定义表情包
+  - 语言配置文件
+- **动态内容**：所有内容都可以通过 HTTP 下载进行空中更新
 
-## Partition Layout Comparison
+## 分区布局对比
 
-### v1 Layout (16MB)
-- `nvs`: 16KB (non-volatile storage)
-- `otadata`: 8KB (OTA data)
-- `phy_init`: 4KB (PHY initialization data)
-- `model`: 960KB (model storage - fixed content)
-- `ota_0`: 6MB (application partition 0)
-- `ota_1`: 6MB (application partition 1)
+### v1 布局 (16MB)
+- `nvs`：16KB（非易失性存储）
+- `otadata`：8KB（OTA 数据）
+- `phy_init`：4KB（PHY 初始化数据）
+- `model`：960KB（模型存储 - 固定内容）
+- `ota_0`：6MB（应用分区 0）
+- `ota_1`：6MB（应用分区 1）
 
-### v2 Layout (16MB)
-- `nvs`: 16KB (non-volatile storage)
-- `otadata`: 8KB (OTA data)
-- `phy_init`: 4KB (PHY initialization data)
-- `ota_0`: 4MB (application partition 0)
-- `ota_1`: 4MB (application partition 1)
-- `assets`: 8MB (network-loadable assets)
+### v2 布局 (16MB)
+- `nvs`：16KB（非易失性存储）
+- `otadata`：8KB（OTA 数据）
+- `phy_init`：4KB（PHY 初始化数据）
+- `ota_0`：4MB（应用分区 0）
+- `ota_1`：4MB（应用分区 1）
+- `assets`：8MB（网络可加载资源）
 
-## Available Configurations
+## 可用配置
 
-### 8MB Flash Devices (`8m.csv`)
-- `nvs`: 16KB
-- `otadata`: 8KB
-- `phy_init`: 4KB
-- `ota_0`: 3MB
-- `ota_1`: 3MB
-- `assets`: 2MB
+### 8MB Flash 设备 (`8m.csv`)
+- `nvs`：16KB
+- `otadata`：8KB
+- `phy_init`：4KB
+- `ota_0`：3MB
+- `ota_1`：3MB
+- `assets`：2MB
 
-### 16MB Flash Devices (`16m.csv`) - Standard
-- `nvs`: 16KB
-- `otadata`: 8KB
-- `phy_init`: 4KB
-- `ota_0`: 4MB
-- `ota_1`: 4MB
-- `assets`: 8MB
+### 16MB Flash 设备 (`16m.csv`) - 标准
+- `nvs`：16KB
+- `otadata`：8KB
+- `phy_init`：4KB
+- `ota_0`：4MB
+- `ota_1`：4MB
+- `assets`：8MB
 
-### 16MB Flash Devices (`16m_c3.csv`) - ESP32-C3 Optimized
-- `nvs`: 16KB
-- `otadata`: 8KB
-- `phy_init`: 4KB
-- `ota_0`: 4MB
-- `ota_1`: 4MB
-- `assets`: 4MB (4000K - limited by available mmap pages)
+### 16MB Flash 设备 (`16m_c3.csv`) - ESP32-C3 优化
+- `nvs`：16KB
+- `otadata`：8KB
+- `phy_init`：4KB
+- `ota_0`：4MB
+- `ota_1`：4MB
+- `assets`：4MB（4000K - 受可用 mmap 页面限制）
 
-### 32MB Flash Devices (`32m.csv`)
-- `nvsfactory`: 200KB
-- `nvs`: 840KB
-- `otadata`: 8KB
-- `phy_init`: 4KB
-- `ota_0`: 4MB
-- `ota_1`: 4MB
-- `assets`: 16MB
+### 32MB Flash 设备 (`32m.csv`)
+- `nvsfactory`：200KB
+- `nvs`：840KB
+- `otadata`：8KB
+- `phy_init`：4KB
+- `ota_0`：4MB
+- `ota_1`：4MB
+- `assets`：16MB
 
-## Benefits
+## 优势
 
-1. **Dynamic Content Management**: Users can download and update wake word models, themes, and other assets without reflashing the device
-2. **Reduced App Size**: Application partitions are optimized, allowing more space for dynamic content
-3. **Enhanced Customization**: Support for custom themes, wake words, and language packs enhances user experience
-4. **Network Flexibility**: Assets can be updated independently of the main application firmware
-5. **Better Resource Utilization**: Efficient use of flash memory with configurable asset storage
-6. **OTA Asset Updates**: Assets can be updated over-the-air via HTTP downloads
+1. **动态内容管理**：用户可以下载和更新唤醒词模型、主题和其他资源，而无需重新刷写设备
+2. **减少应用大小**：应用分区经过优化，为动态内容留出更多空间
+3. **增强自定义**：支持自定义主题、唤醒词和语言包，增强用户体验
+4. **网络灵活性**：资源可以独立于主应用固件进行更新
+5. **更好的资源利用**：高效使用 Flash 内存，具有可配置的资源存储
+6. **OTA 资源更新**：资源可以通过 HTTP 下载进行空中更新
 
-## Technical Details
+## 技术细节
 
-- **Partition Type**: Assets partition uses `spiffs` subtype for SPIFFS filesystem compatibility
-- **Memory Mapping**: Assets are memory-mapped for efficient access during runtime
-- **Checksum Validation**: Built-in integrity checking ensures asset data validity
-- **Progressive Download**: Assets can be downloaded progressively with progress tracking
-- **Fallback Support**: Graceful fallback to default assets if network updates fail
+- **分区类型**：资源分区使用 `spiffs` 子类型以兼容 SPIFFS 文件系统
+- **内存映射**：资源在运行时被内存映射以实现高效访问
+- **校验和验证**：内置完整性检查确保资源数据有效性
+- **渐进式下载**：资源可以渐进式下载，并具有进度跟踪
+- **回退支持**：如果网络更新失败，会优雅回退到默认资源
 
-## Migration from v1
+## 从 v1 迁移
 
-When upgrading from v1 to v2:
-1. **Backup Important Data**: Ensure any important data in the old `model` partition is backed up
-2. **Flash New Partition Table**: Use the appropriate v2 partition table for your flash size
-3. **Download Assets**: The device will automatically download required assets on first boot
-4. **Verify Functionality**: Ensure all features work correctly with the new partition layout
+从 v1 升级到 v2 时：
+1. **备份重要数据**：确保旧 `model` 分区中的任何重要数据都已备份
+2. **刷写新分区表**：为您的 Flash 大小使用适当的 v2 分区表
+3. **下载资源**：设备将在首次启动时自动下载所需资源
+4. **验证功能**：确保所有功能在新的分区布局下正常工作
 
-## Usage Notes
+## 使用说明
 
-- The `assets` partition size varies by configuration to optimize for different flash sizes
-- ESP32-C3 devices use a smaller assets partition (4MB) due to limited available mmap pages in the system
-- 32MB devices get the largest assets partition (16MB) for maximum content storage
-- All partition tables maintain proper alignment for optimal flash performance 
+- `assets` 分区大小因配置而异，以针对不同的 Flash 大小进行优化
+- ESP32-C3 设备使用较小的资源分区（4MB），因为系统中可用的 mmap 页面有限
+- 32MB 设备获得最大的资源分区（16MB），用于最大的内容存储
+- 所有分区表都保持适当的对齐，以获得最佳的 Flash 性能
