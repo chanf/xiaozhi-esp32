@@ -162,7 +162,75 @@ shasum -a 256 releases/v2.2.5_bread-compact-wifi.zip
 bd490ef6951fddad645f31910ac17f527912bc931c755b9c4095f75b95692845
 ```
 
-## 7. 一条命令复现（已安装好 ESP-IDF 前提下）
+## 7. 上传到开发板（烧录）
+
+拿到 `releases/v2.2.5_bread-compact-wifi.zip` 后，推荐按下面步骤烧录。
+
+## 7.1 解压固件包
+
+```bash
+unzip -o releases/v2.2.5_bread-compact-wifi.zip -d /tmp/xiaozhi-fw
+```
+
+解压后应有：
+
+- `/tmp/xiaozhi-fw/merged-binary.bin`
+
+## 7.2 连接开发板并确认串口
+
+macOS：
+
+```bash
+ls /dev/cu.usb* /dev/cu.SLAB* 2>/dev/null
+```
+
+常见串口示例：
+
+- `/dev/cu.usbmodemXXXX`
+- `/dev/cu.SLAB_USBtoUART`
+
+## 7.3 让开发板进入下载模式
+
+大多数 ESP32-S3 开发板可用以下方式：
+
+1. 按住 `BOOT`（有些板子是 `IO0`）
+2. 短按一下 `RST`（或 `EN`）
+3. 松开 `RST` 后再松开 `BOOT`
+
+## 7.4 烧录 `merged-binary.bin`（整包地址 0x0）
+
+将 `PORT` 替换成你的串口：
+
+```bash
+python -m esptool --chip esp32s3 --port PORT --baud 921600 write_flash -z 0x0 /tmp/xiaozhi-fw/merged-binary.bin
+```
+
+示例：
+
+```bash
+python -m esptool --chip esp32s3 --port /dev/cu.usbmodem5B901824481 --baud 921600 write_flash -z 0x0 /tmp/xiaozhi-fw/merged-binary.bin
+```
+
+## 7.5 常见失败与处理
+
+- `Failed to connect` / 一直连不上：
+  - 检查是否进入下载模式（重做 7.3）
+  - 波特率从 `921600` 降到 `460800` 或 `115200`
+- 串口占用（`Resource busy`）：
+  - 关闭串口监视器（VSCode Monitor、`screen`、`miniterm`）
+- 想彻底清空后重刷：
+
+```bash
+python -m esptool --chip esp32s3 --port PORT erase_flash
+python -m esptool --chip esp32s3 --port PORT --baud 921600 write_flash -z 0x0 /tmp/xiaozhi-fw/merged-binary.bin
+```
+
+## 7.6 烧录后验证
+
+- 观察串口日志是否正常启动（可用 `idf.py -p PORT monitor` 或 VSCode ESP-IDF Monitor）
+- 首次启动通常需要重新配网（NVS 可能已被清空）
+
+## 8. 一条命令复现（已安装好 ESP-IDF 前提下）
 
 ```bash
 cd /Users/feng/Work/xiaozhi-esp32 && \
