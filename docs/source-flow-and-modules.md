@@ -10,122 +10,141 @@
 ## 2. Mermaid 工作流程图（全链路）
 ```mermaid
 flowchart TD
-    A[app_main 启动] --> B[NVS 初始化/修复]
-    B --> C[Application::Initialize]
+    A[app_main 启动]
+    B[NVS 初始化与修复]
+    C[Application Initialize]
+    A --> B --> C
 
-    C --> C1[Board::GetInstance]
-    C --> C2[Display.SetupUI + 版本信息]
-    C --> C3[AudioService.Initialize + Start]
-    C --> C4[注册 Audio 回调与 State 回调]
-    C --> C5[McpServer.AddCommonTools/UserOnlyTools]
-    C --> C6[Board.SetNetworkEventCallback]
-    C --> C7[Board.StartNetwork 异步联网]
-    C --> D[Application::Run 事件循环]
+    C1[Board 与 Display 初始化]
+    C2[AudioService 初始化并启动]
+    C3[McpServer 注册工具]
+    C4[注册网络与音频回调]
+    D[Board 异步联网]
+    E[Application Run 事件循环]
+    C --> C1
+    C --> C2
+    C --> C3
+    C --> C4
+    C --> D
+    C --> E
 
-    D --> E{网络事件}
-    E -->|Connected| F[HandleNetworkConnectedEvent]
-    E -->|Disconnected| G[HandleNetworkDisconnectedEvent]
+    F{网络是否已连接}
+    E --> F
+    F -->|是| G[进入 Activating 并启动 ActivationTask]
+    F -->|否| H[等待网络或进入配网]
 
-    F --> H[状态 -> Activating]
-    H --> I[创建 ActivationTask]
-    I --> J[CheckAssetsVersion]
-    J --> K[CheckNewVersion]
-    K --> L[InitializeProtocol]
-    L --> M{OTA 配置含协议?}
-    M -->|mqtt| N[MqttProtocol]
-    M -->|websocket| O[WebsocketProtocol]
-    M -->|默认| N
-    N --> P[protocol.Start]
-    O --> P
-    P --> Q[MAIN_EVENT_ACTIVATION_DONE]
-    Q --> R[HandleActivationDoneEvent]
-    R --> S[状态 -> Idle, 播放成功音, 低功耗]
+    I[检查 Assets 版本并应用]
+    J[检查固件版本与激活状态]
+    L{选择协议}
+    M[MqttProtocol]
+    N[WebsocketProtocol]
+    K[初始化协议并启动]
+    O[Activation 完成并进入 Idle]
+    G --> I --> J --> L
+    L -->|MQTT| M
+    L -->|WebSocket| N
+    M --> K
+    N --> K
+    K --> O
 
-    D --> T{用户输入/唤醒词}
-    T -->|按键 Toggle/Start/Stop| U[聊天状态控制]
-    T -->|Wake Word| V[HandleWakeWordDetectedEvent]
-    U --> W[必要时 OpenAudioChannel]
-    V --> W
-    W --> X[状态 -> Listening]
+    P{用户交互}
+    Q[按键触发聊天状态控制]
+    R[唤醒词触发唤醒处理]
+    S[必要时打开音频通道]
+    T[进入 Listening]
+    E --> P
+    P --> Q
+    P --> R
+    Q --> S
+    R --> S
+    S --> T
 
-    D --> Y[MAIN_EVENT_SEND_AUDIO]
-    X --> Y
-    Y --> Z[AudioService PopSendQueue]
-    Z --> AA[protocol.SendAudio 上行]
+    U[发送上行音频]
+    V[接收下行消息与音频]
+    W[Protocol SendAudio]
+    X[更新文本 情绪 MCP 指令]
+    Y[音频解码与播放]
+    Z[Speaking 与 Listening 或 Idle 切换]
+    T --> U
+    U --> W
+    K --> V
+    V --> X
+    V --> Y
+    Y --> Z
 
-    P --> AB[协议下行消息回调]
-    AB --> AC{消息类型}
-    AC -->|tts start/stop| AD[Speaking 与 Listening/Idle 状态切换]
-    AC -->|stt/llm| AE[Display 文本/情绪更新]
-    AC -->|mcp| AF[McpServer.ParseMessage]
-    AC -->|system/alert| AG[Reboot/Alert 等系统行为]
-    AB --> AH[协议下行音频]
-    AH --> AI[AudioService.PushDecodeQueue]
-    AI --> AJ[Opus 解码 + 扬声器播放]
+    AA{异常处理}
+    AB[关闭音频通道并等待重连]
+    AC[告警并回到 Idle]
+    AD[清理 UI 并回到 Idle]
+    E --> AA
+    AA -->|断网| AB
+    AA -->|协议错误或超时| AC
+    AA -->|服务端关闭会话| AD
 
-    D --> AK{异常与恢复}
-    AK -->|网络断开| G
-    G --> G1[会话中则 CloseAudioChannel]
-    G1 --> G2[状态栏更新，等待重连]
-    AK -->|协议错误/超时| AL[MAIN_EVENT_ERROR]
-    AL --> AM[Alert + 状态回 Idle]
-    AK -->|Server goodbye/断链| AN[OnAudioChannelClosed]
-    AN --> AO[清理 UI + 状态回 Idle]
+    AE{是否发现新固件}
+    AF[执行 OTA 下载与写入]
+    AG{升级是否成功}
+    AH[重启设备]
+    AI[恢复音频并继续运行]
+    J --> AE
+    AE -->|是| AF
+    AF --> AG
+    AG -->|是| AH
+    AG -->|否| AI
+    AE -->|否| O
 
-    K --> AP{发现新固件?}
-    AP -->|是| AQ[UpgradeFirmware]
-    AQ --> AR[关闭通道/停音频/下载写入 OTA]
-    AR --> AS{升级成功?}
-    AS -->|是| AT[Reboot -> esp_restart]
-    AS -->|否| AU[重启音频并继续运行]
-    AP -->|否| S
-
-    AO --> END1[终点A: 正常会话结束(Idle)]
-    AM --> END2[终点B: 异常恢复后待机(Idle)]
-    AT --> END3[终点C: OTA升级重启]
+    O --> END1[终点 正常会话结束]
+    AC --> END2[终点 异常恢复待机]
+    AD --> END2
+    AH --> END3[终点 OTA 重启]
 ```
 
 ## 3. Mermaid 模块图（核心层 + 扩展层）
 ```mermaid
 flowchart TB
-    subgraph L1[应用编排层]
+    subgraph 应用编排层
         APP[Application]
         DSM[DeviceStateMachine]
     end
 
-    subgraph L2[服务层]
+    subgraph 服务层
         ASVC[AudioService]
         OTA[Ota]
         AST[Assets]
         MCP[McpServer]
-        SET[Settings/NVS]
+        SET[Settings]
         SYS[SystemInfo]
     end
 
-    subgraph L3[协议层]
+    subgraph 协议层
         PABS[Protocol 抽象]
         PMQTT[MqttProtocol]
         PWS[WebsocketProtocol]
     end
 
-    subgraph L4[板级抽象层]
+    subgraph 板级抽象层
         BOARD[Board 抽象]
         WBOARD[WifiBoard]
-        NET[NetworkInterface<br/>HTTP/WebSocket/MQTT/UDP]
+        NET[NetworkInterface]
         DISP[Display]
         CODEC[AudioCodec]
         LED[Led]
-        CAM[Camera(可选)]
+        CAM[Camera 可选]
     end
 
-    subgraph L5[板级实现扩展层]
-        BIG[Board Implementations Group<br/>main/boards/* (90+)]
-        CUR[当前配置示例: bread-compact-wifi]
+    subgraph 网络通道
+        HTTP[HTTP]
+        MQ[MQTT]
+        WS[WebSocket]
+        UDP[UDP]
+    end
+
+    subgraph 板级实现扩展层
+        BIG[Board Implementations Group]
+        CUR[当前配置示例 bread compact wifi]
     end
 
     APP -->|状态迁移请求| DSM
-    DSM -->|状态变更回调事件| APP
-
     APP -->|初始化/控制| ASVC
     APP -->|激活/版本/升级| OTA
     APP -->|资源检查/下载/应用| AST
@@ -149,10 +168,14 @@ flowchart TB
     AST -->|HTTP下载资产| NET
     PMQTT -->|MQTT信令 + UDP音频| NET
     PWS -->|WebSocket信令+音频| NET
+    NET --> HTTP
+    NET --> MQ
+    NET --> WS
+    NET --> UDP
 
     ASVC -->|采集/播放/编解码| CODEC
-    APP -->|UI更新| DISP
-    APP -->|状态灯联动| LED
+    APP --> DISP
+    APP --> LED
     MCP -->|设备控制工具调用| BOARD
     MCP -->|通过 Application 发回协议| APP
 
