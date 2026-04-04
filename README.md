@@ -1,7 +1,5 @@
 # 基于 MCP 协议的 AI 语音聊天机器人
 
-[中文](README_zh.md) | [日本語](README_ja.md)
-
 ## 简介
 
 👉 [人类：给 AI 装上摄像头 vs AI：瞬间发现主人三天没洗头【bilibili】](https://www.bilibili.com/video/BV1bpjgzKEhd/)
@@ -126,6 +124,8 @@ v1 的稳定版本是 1.9.2。您可以通过运行 `git checkout v1` 切换到 
 - [MCP 协议交互流程](docs/mcp-protocol.md) - 设备端 MCP 协议实现
 - [MQTT + UDP 混合通信协议文档](docs/mqtt-udp.md)
 - [详细的 WebSocket 通信协议文档](docs/websocket.md)
+- [源码工作流程图与模块图](docs/source-flow-and-modules.md) - 基于源码分析的全链路流程图与架构模块图
+- [ESP32-S3 N16R8 编译构建指南](docs/build-esp32s3-n16r8.md) - 针对 ESP32-S3 N16R8 开发板的构建步骤
 
 ## 大模型配置
 
