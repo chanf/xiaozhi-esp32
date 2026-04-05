@@ -21,7 +21,7 @@ struct SyncProcessResult {
 }
 
 final class ProcessRunner {
-    func runSync(command: [String]) -> SyncProcessResult {
+    func runSync(command: [String], environment: [String: String]? = nil) -> SyncProcessResult {
         guard !command.isEmpty else {
             return SyncProcessResult(exitCode: -1, stdout: "", stderr: ProcessRunnerError.emptyCommand.localizedDescription)
         }
@@ -32,6 +32,9 @@ final class ProcessRunner {
 
         process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
         process.arguments = command
+        if let environment {
+            process.environment = ProcessInfo.processInfo.environment.merging(environment) { _, new in new }
+        }
         process.standardOutput = stdoutPipe
         process.standardError = stderrPipe
 
@@ -55,6 +58,7 @@ final class ProcessRunner {
     @discardableResult
     func runAsync(
         command: [String],
+        environment: [String: String]? = nil,
         onOutput: @escaping (String) -> Void,
         onCompletion: @escaping (Int32) -> Void
     ) throws -> Process {
@@ -68,6 +72,9 @@ final class ProcessRunner {
 
         process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
         process.arguments = command
+        if let environment {
+            process.environment = ProcessInfo.processInfo.environment.merging(environment) { _, new in new }
+        }
         process.standardOutput = stdoutPipe
         process.standardError = stderrPipe
 

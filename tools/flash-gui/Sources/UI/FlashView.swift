@@ -15,7 +15,7 @@ struct FlashView: View {
                             .foregroundColor(.secondary)
                     }
                     if !model.environmentStatus.isReady {
-                        Text("安装命令：\(model.environmentStatus.installHint)")
+                        Text("提示：\(model.environmentStatus.installHint)")
                             .font(.system(size: 11, weight: .regular, design: .monospaced))
                     }
                     HStack {
@@ -30,10 +30,10 @@ struct FlashView: View {
 
             GroupBox("固件") {
                 HStack {
-                    TextField("选择 merged-binary.bin 文件路径", text: $model.binPath)
+                    TextField("选择 .bin 或 .zip 固件文件路径", text: $model.firmwarePath)
                         .textFieldStyle(.roundedBorder)
                     Button("浏览...") {
-                        model.selectBinFile()
+                        model.selectFirmwareFile()
                     }
                 }
             }
@@ -86,7 +86,7 @@ struct FlashView: View {
             }
 
             HStack(spacing: 10) {
-                Button("烧录 BIN") {
+                Button("烧录固件") {
                     model.flashBin()
                 }
                 .disabled(!model.canRunFlash)

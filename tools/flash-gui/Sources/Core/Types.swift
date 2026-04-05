@@ -55,8 +55,8 @@ struct EnvironmentStatus {
 
     static let checking = EnvironmentStatus(
         isReady: false,
-        summary: "正在检查 python3 和 esptool...",
+        summary: "正在检查 python3 与内置 esptool...",
         detail: "",
-        installHint: "python3 -m pip install --upgrade esptool"
+        installHint: "请先安装 Python 3。"
     )
 }
