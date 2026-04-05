@@ -2,7 +2,51 @@
 
 本文基于当前固件源码整理：设备端不直接调用大模型 API，而是先与业务服务端建立会话通道，由服务端完成 STT/LLM/TTS 编排，再把结果回传设备。
 
-## 1. 全链路时序图（WebSocket 主路径）
+## 1. 系统全局结构图
+
+```mermaid
+graph LR
+    Device["小智AI（设备固件）"]
+    Activate["激活/配置/版本服务"]
+    Gateway["会话通信网关"]
+    LLM["LLM 服务器"]
+    STT["STT 服务"]
+    TTS["TTS 服务"]
+    MCP["工具编排/MCP 调用层"]
+    FW["固件下载服务"]
+    Assets["资源包下载服务"]
+    Vision["视觉/图像理解 HTTP 服务"]
+    ScreenSvc["屏幕快照上传/预览图片 URL 服务"]
+
+    Device -->|HTTP checkVersion / activate| Activate
+    Activate -->|下发 websocket / mqtt 配置与鉴权信息| Device
+
+    Device -->|上行会话消息/音频| Gateway
+    Gateway -->|下行会话消息/音频| Device
+    Gateway -->|语音上行| STT
+    STT -->|识别文本| Gateway
+
+    Gateway -->|Prompt 与上下文| LLM
+    LLM -->|回复文本/情绪/工具意图| Gateway
+
+    Gateway -->|待合成文本| TTS
+    TTS -->|TTS 音频流| Gateway
+
+    LLM -->|触发工具调用| MCP
+    MCP -->|工具执行结果| LLM
+    MCP -->|MCP JSON-RPC 透传结果| Gateway
+    Gateway -->|MCP JSON-RPC 请求| MCP
+    Gateway -->|type mcp payload| Device
+    Device -->|type mcp payload| Gateway
+
+    Device -->|HTTP 下载 firmware| FW
+    Device -->|HTTP 下载 assets| Assets
+    Device -->|HTTP 上传图片并提问| Vision
+    Device -->|HTTP 上传快照| ScreenSvc
+    ScreenSvc -->|HTTP 预览图 URL/内容| Device
+```
+
+## 2. 全链路时序图（WebSocket 主路径）
 
 ```mermaid
 sequenceDiagram
@@ -52,13 +96,13 @@ sequenceDiagram
     Device->>Backend: {"session_id":"...","type":"listen","state":"stop"} or {"session_id":"...","type":"abort"}
 ```
 
-## 2. MQTT+UDP 变体（差异点）
+## 3. MQTT+UDP 变体（差异点）
 
 - 控制面：走 MQTT（`hello/listen/stt/tts/mcp/goodbye` 这类 JSON）。
 - 媒体面：走 UDP（Opus 音频，AES-CTR 加密，含 `nonce/sequence/timestamp`）。
 - 建链过程：设备先 MQTT 发送 `hello(transport=udp)`，服务端回 `udp.server/port/key/nonce`，再建立 UDP 音频通道。
 
-## 3. 关键消息清单
+## 4. 关键消息清单
 
 - 设备上行
   - `type=hello`
@@ -75,7 +119,7 @@ sequenceDiagram
   - `type=system`（如 `reboot`）
   - Binary Opus Audio
 
-## 4. 对应源码锚点
+## 5. 对应源码锚点
 
 - 协议抽象与消息发送：`main/protocols/protocol.h`, `main/protocols/protocol.cc`
 - WebSocket 实现：`main/protocols/websocket_protocol.cc`
